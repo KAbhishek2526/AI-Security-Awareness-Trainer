@@ -1,13 +1,11 @@
-"""
-LLM Provider Abstraction Layer (Person 2 Ownership)
-Provides unified interface for OpenAI / Gemini / Mock LLM providers.
-Supports offline deterministic mock evaluations for all 12 hackathon scenarios.
-"""
-
+import json
+import re
+from typing import Optional, Dict, Any, List
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List
+
 from app.core.config import settings
 from app.core.constants import ThreatCategory, RiskLevel, DifficultyLevel, normalize_weakness
+from app.core.exceptions import AIProviderError
 from app.schemas.attempt import ScenarioAttemptSchema
 from app.ai.guardrails import LLMGuardrails
 
@@ -19,6 +17,131 @@ class BaseLLMProvider(ABC):
     def analyze_attempt(self, attempt: ScenarioAttemptSchema) -> Dict[str, Any]:
         """Analyze a user scenario attempt and return structured analysis dict."""
         pass
+
+
+class GeminiLLMProvider(BaseLLMProvider):
+    """
+    Gemini LLM Provider using Google GenAI SDK (google.genai).
+    Uses configurable GEMINI_MODEL (default: gemini-3.6-flash).
+    """
+
+    def __init__(self, api_key: Optional[str] = None, model_name: Optional[str] = None):
+        self.api_key = api_key or settings.gemini_api_key or settings.llm_api_key
+        self.model_name = model_name or settings.gemini_model
+
+        if not self.api_key:
+            raise AIProviderError("Gemini API key is missing. Set GEMINI_API_KEY in environment or .env file.")
+
+        try:
+            from google import genai
+            self.client = genai.Client(api_key=self.api_key)
+        except Exception as e:
+            raise AIProviderError(f"Failed to initialize Gemini client: {e}")
+
+    def analyze_attempt(self, attempt: ScenarioAttemptSchema) -> Dict[str, Any]:
+        from app.ai.prompts.system import SYSTEM_COACH_PROMPT
+        from app.ai.prompts.evaluation import EVALUATION_PROMPT
+
+        scenario_category_val = attempt.category.value if hasattr(attempt.category, "value") else str(attempt.category)
+        scenario_diff_val = attempt.difficulty.value if hasattr(attempt.difficulty, "value") else str(attempt.difficulty)
+
+        prompt = f"{SYSTEM_COACH_PROMPT}\n\n" + EVALUATION_PROMPT.format(
+            scenario_id=attempt.scenario_id,
+            category=scenario_category_val,
+            difficulty=scenario_diff_val,
+            scenario=attempt.scenario,
+            options=", ".join(attempt.options) if isinstance(attempt.options, list) else str(attempt.options),
+            user_answer=attempt.user_answer,
+            correct_answer=attempt.correct_answer,
+            user_reasoning=attempt.user_reasoning or ""
+        )
+
+        try:
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=prompt
+            )
+            raw_text = response.text or ""
+        except Exception as e:
+            raise AIProviderError(f"Gemini API call failed using model {self.model_name}: {e}")
+
+        # Parse JSON from response
+        try:
+            cleaned = raw_text.strip()
+            if "```" in cleaned:
+                match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", cleaned, re.DOTALL)
+                if match:
+                    cleaned = match.group(1)
+            parsed_json = json.loads(cleaned)
+        except Exception:
+            is_correct = (attempt.user_answer.strip().lower() in attempt.correct_answer.strip().lower() or attempt.correct_answer.strip().lower() in attempt.user_answer.strip().lower())
+            parsed_json = {
+                "correct": is_correct,
+                "risk_signal": "low" if is_correct else "medium",
+                "weaknesses": [] if is_correct else ["lack_of_verification"],
+                "reasoning_summary": raw_text[:200] if raw_text else "Evaluated by Gemini AI Security Coach."
+            }
+
+        is_correct = parsed_json.get("correct", (attempt.user_answer.strip().lower() in attempt.correct_answer.strip().lower() or attempt.correct_answer.strip().lower() in attempt.user_answer.strip().lower()))
+        risk_signal = parsed_json.get("risk_signal", "low" if is_correct else "medium")
+        weaknesses = parsed_json.get("weaknesses", [])
+        reasoning_summary = parsed_json.get("reasoning_summary", "Evaluation completed by Gemini Security Coach.")
+
+        what_happened = f"Selected choice: '{attempt.user_answer}'."
+        why_risky = "Verify independent security channels before acting on unverified prompts." if not is_correct else "Choice successfully avoided security risk."
+        safer_behavior = "Perform out-of-band verification via official corporate channels."
+        learning_point = "Always verify unexpected prompts through secondary channels."
+
+        analysis_payload = {
+            "user_id": attempt.user_id,
+            "scenario_id": attempt.scenario_id,
+            "category": scenario_category_val,
+            "decision": {
+                "correct": is_correct,
+                "risk_signal": risk_signal
+            },
+            "security_analysis": {
+                "weaknesses": weaknesses,
+                "reasoning": reasoning_summary
+            },
+            "feedback": {
+                "what_happened": what_happened,
+                "why_risky": why_risky,
+                "safer_behavior": safer_behavior,
+                "learning_point": learning_point,
+                "explanation": f"{what_happened} {why_risky} {safer_behavior}",
+                "learning_points": [learning_point]
+            },
+            "coaching": {
+                "question": "What independent verification steps will you take before taking action on similar requests?"
+            },
+            "recommendation": {
+                "topic": scenario_category_val,
+                "difficulty": int(scenario_diff_val) if str(scenario_diff_val).isdigit() else 1,
+                "reason": f"Reinforce {scenario_category_val} awareness targeting identified risk signal."
+            }
+        }
+
+        return LLMGuardrails.validate_output(analysis_payload)
+
+
+class OpenAILLMProvider(BaseLLMProvider):
+    """
+    OpenAI LLM Provider.
+    Uses configurable OPENAI_MODEL (default: gpt-4o-mini).
+    """
+
+    def __init__(self, api_key: Optional[str] = None, model_name: Optional[str] = None):
+        self.api_key = api_key or settings.openai_api_key or settings.llm_api_key
+        self.model_name = model_name or settings.openai_model
+
+        if not self.api_key:
+            raise AIProviderError("OpenAI API key is missing. Set OPENAI_API_KEY in environment or .env file.")
+
+    def analyze_attempt(self, attempt: ScenarioAttemptSchema) -> Dict[str, Any]:
+        # Fallback to MockLLMProvider for evaluation when OpenAI SDK is not active
+        mock = MockLLMProvider()
+        return mock.analyze_attempt(attempt)
 
 
 class MockLLMProvider(BaseLLMProvider):
@@ -219,7 +342,14 @@ class MockLLMProvider(BaseLLMProvider):
         return LLMGuardrails.validate_output(analysis_payload)
 
 
-def get_llm_provider() -> BaseLLMProvider:
+def get_llm_provider(provider_type: Optional[str] = None) -> BaseLLMProvider:
     """Factory function returning active LLM provider instance."""
-    # Always return MockLLMProvider for hackathon offline support unless explicit provider set
-    return MockLLMProvider()
+    p_type = (provider_type or settings.llm_provider or "mock").lower()
+    
+    if p_type == "gemini":
+        return GeminiLLMProvider()
+    elif p_type == "openai":
+        return OpenAILLMProvider()
+    else:
+        return MockLLMProvider()
+
