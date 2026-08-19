@@ -1,36 +1,206 @@
 [
   {
-    "scenario_id": "SC001",
+    "scenario_id": "PHISH001",
     "title": "Urgent Password Reset Link",
     "category": "phishing",
-    "difficulty": 2,
-    "description": "You receive an email from 'IT-Support <support@company-verify.com>' stating your email account password will expire in 15 minutes unless reset immediately via the attached link.",
+    "difficulty": 1,
+    "description": "You receive an email from 'IT-Support <support@company-verify.com>' stating your corporate email password will expire in 15 minutes unless reset immediately via the attached link.",
     "prompt": "What is the safest action to take?",
     "options": [
       "Click the link immediately and update your password",
-      "Verify the sender email domain and contact internal IT support directly",
-      "Forward the email to all colleagues to warn them",
-      "Ignore it without reporting"
+      "Verify the sender address domain and navigate to official IT portal directly",
+      "Forward the email to your entire department to warn them",
+      "Ignore the email completely without reporting to security"
     ],
-    "correct_answer": "Verify the sender email domain and contact internal IT support directly",
-    "explanation": "Legitimate corporate IT updates never come from external unverified domains requiring immediate password input.",
-    "tags": ["phishing", "email", "urgency"]
+    "correct_answer": "Verify the sender address domain and navigate to official IT portal directly",
+    "explanation": "Legitimate corporate IT updates never come from external lookalike domains or demand immediate password resets via unverified email links.",
+    "tags": ["phishing", "email", "urgency", "lookalike_domain"]
   },
   {
-    "scenario_id": "SC002",
-    "title": "Unexpected OTP Request Call",
+    "scenario_id": "PHISH002",
+    "title": "Altered Vendor Invoice Request",
+    "category": "phishing",
+    "difficulty": 2,
+    "description": "You receive an invoice from a regular vendor, but the email comes from 'billing@acme-supplies-inc.com' (with an extra letter) requesting payment to a new bank account, with no artificial urgency.",
+    "prompt": "How should you process this invoice?",
+    "options": [
+      "Process the payment immediately since it is a known vendor name",
+      "Verify the email address and contact vendor billing via a known phone number before updating bank details",
+      "Reply directly to the email asking if the bank account change is genuine",
+      "Delete the invoice and ignore vendor communications"
+    ],
+    "correct_answer": "Verify the email address and contact vendor billing via a known phone number before updating bank details",
+    "explanation": "Business Email Compromise (BEC) often uses slightly altered email domains. Always perform out-of-band verification before changing payment details.",
+    "tags": ["phishing", "bec", "vendor_invoice", "altered_domain"]
+  },
+  {
+    "scenario_id": "PHISH003",
+    "title": "Urgent Confidential Wire Transfer Request from CEO",
+    "category": "phishing",
+    "difficulty": 3,
+    "description": "An email appearing to originate from the CEO's verified email account requests an urgent, confidential wire transfer for an unannounced acquisition, instructing you not to discuss it with anyone.",
+    "prompt": "What is the appropriate security procedure?",
+    "options": [
+      "Execute the wire transfer immediately because it is marked urgent and confidential by the CEO",
+      "Perform independent out-of-band verification via executive channel or secondary finance manager approval",
+      "Reply asking the CEO for more details about the acquisition",
+      "Post on internal company chat asking colleagues if they heard about an acquisition"
+    ],
+    "correct_answer": "Perform independent out-of-band verification via executive channel or secondary finance manager approval",
+    "explanation": "Executive impersonation (CEO Fraud) relies on authority trust and secrecy. Dual authorization and out-of-band verification are required for financial transactions regardless of authority.",
+    "tags": ["phishing", "ceo_fraud", "authority_trust", "wire_transfer"]
+  },
+  {
+    "scenario_id": "SOC001",
+    "title": "IT Helpdesk Credential Verification Call",
+    "category": "social_engineering",
+    "difficulty": 1,
+    "description": "A phone caller identifying themselves as internal IT helpdesk claims they are performing urgent system maintenance and asks for your domain password to verify your account.",
+    "prompt": "How should you handle this phone request?",
+    "options": [
+      "Provide your password since they identified themselves as internal IT helpdesk",
+      "Refuse to share your password, end the call, and report the phone number to IT security",
+      "Give them a temporary password and change it right after",
+      "Ask them to confirm your employee ID number before providing password"
+    ],
+    "correct_answer": "Refuse to share your password, end the call, and report the phone number to IT security",
+    "explanation": "Legitimate IT personnel will NEVER ask for your password under any circumstances.",
+    "tags": ["social_engineering", "vishing", "password_security", "impersonation"]
+  },
+  {
+    "scenario_id": "SOC002",
+    "title": "Tailgating at Secure Facility Entrance",
+    "category": "social_engineering",
+    "difficulty": 2,
+    "description": "As you badge into your secure office building, a person carrying large coffee trays and boxes approaches closely and asks you to hold the door open for them.",
+    "prompt": "What is the proper physical security response?",
+    "options": [
+      "Hold the door open politely because they have full hands",
+      "Politely direct them to the security desk to badge in independently before entering",
+      "Let them in but follow them closely to their desk",
+      "Block the door with your body and yell for security"
+    ],
+    "correct_answer": "Politely direct them to the security desk to badge in independently before entering",
+    "explanation": "Tailgating exploits politeness to bypass physical access controls. Everyone must swipe their own badge regardless of physical burden.",
+    "tags": ["social_engineering", "tailgating", "physical_security", "access_control"]
+  },
+  {
+    "scenario_id": "MFA001",
+    "title": "Unexpected MFA Push Notification",
     "category": "mfa_security",
     "difficulty": 1,
-    "description": "A caller claiming to be from your company helpdesk calls saying they are testing MFA systems and asks you to read aloud the 6-digit OTP code sent to your phone.",
+    "description": "You receive an unexpected Multi-Factor Authentication (MFA) push notification on your smartphone while watching TV, even though you are not actively logging into any corporate system.",
+    "prompt": "What action should you take?",
+    "options": [
+      "Approve the push request to make the notification disappear",
+      "Deny the MFA prompt immediately and report potential credential compromise to security",
+      "Ignore the notification until it pops up a second time",
+      "Approve it assuming an automated system background job triggered it"
+    ],
+    "correct_answer": "Deny the MFA prompt immediately and report potential credential compromise to security",
+    "explanation": "An unexpected MFA push indicates an attacker possesses your password. Denying and reporting immediately halts unauthorized access.",
+    "tags": ["mfa_security", "mfa_fatigue", "push_notification", "credential_compromise"]
+  },
+  {
+    "scenario_id": "MFA002",
+    "title": "Bank Phone Verification OTP Request",
+    "category": "mfa_security",
+    "difficulty": 2,
+    "description": "A caller claiming to represent your financial institution states suspicious activity was detected on your account and asks you to read aloud the 6-digit One-Time Password (OTP) sent to your mobile phone to verify your identity.",
     "prompt": "How should you respond to this call?",
     "options": [
-      "Provide the OTP since they identified themselves as IT helpdesk",
-      "Refuse to share the OTP, hang up, and report the incident to security",
-      "Ask them to confirm your employee ID before sharing the OTP",
-      "Read out half of the code to verify their identity"
+      "Provide the OTP so they can secure your account",
+      "Refuse to share the OTP, hang up, and call your bank using the official phone number on your card",
+      "Read only the first 3 digits of the OTP to prove identity",
+      "Ask the caller to read their employee ID first before sharing the OTP"
     ],
-    "correct_answer": "Refuse to share the OTP, hang up, and report the incident to security",
-    "explanation": "One-Time Passwords (OTPs) are confidential single-use tokens. Support staff will NEVER ask for your OTP.",
-    "tags": ["mfa_security", "social_engineering", "otp"]
+    "correct_answer": "Refuse to share the OTP, hang up, and call your bank using the official phone number on your card",
+    "explanation": "One-Time Passwords (OTPs) are confidential access tokens. Banks explicitly instruct customers never to share OTPs over the phone.",
+    "tags": ["mfa_security", "otp_sharing", "vishing", "social_engineering"]
+  },
+  {
+    "scenario_id": "PWD001",
+    "title": "Selecting Work Password Practice",
+    "category": "password_security",
+    "difficulty": 1,
+    "description": "You are required to set up credentials for a new corporate work account.",
+    "prompt": "Which password management practice is safest?",
+    "options": [
+      "Reuse your personal email password with an added special character",
+      "Generate a unique, random passphrase or password using an approved enterprise password manager",
+      "Write down the password on a sticky note kept under your keyboard",
+      "Use 'Company2026!' so it is easy for team members to remember"
+    ],
+    "correct_answer": "Generate a unique, random passphrase or password using an approved enterprise password manager",
+    "explanation": "Password reuse spreads compromise across systems. Unique passphrases stored in an enterprise password manager maximize security.",
+    "tags": ["password_security", "password_manager", "passphrase", "credential_hygiene"]
+  },
+  {
+    "scenario_id": "PWD002",
+    "title": "Shared Plaintext Password Spreadsheet",
+    "category": "password_security",
+    "difficulty": 2,
+    "description": "You discover a shared department spreadsheet titled 'Team_Passwords.xlsx' containing plaintext administrative usernames and passwords accessible to all employees.",
+    "prompt": "What is the correct remediation action?",
+    "options": [
+      "Keep using the spreadsheet since it makes sharing administrative access convenient for the team",
+      "Immediately report the file to security, migrate credentials to an enterprise password manager, and remove plaintext file",
+      "Copy the spreadsheet to your personal desktop for backup",
+      "Add your personal passwords to the spreadsheet for convenience"
+    ],
+    "correct_answer": "Immediately report the file to security, migrate credentials to an enterprise password manager, and remove plaintext file",
+    "explanation": "Storing plaintext credentials in shared files exposes system access to unauthorized internal and external parties.",
+    "tags": ["password_security", "plaintext_credentials", "shared_file", "secret_exposure"]
+  },
+  {
+    "scenario_id": "DATA001",
+    "title": "Transferring Sensitive Customer PII",
+    "category": "data_protection",
+    "difficulty": 1,
+    "description": "You need to send a spreadsheet containing sensitive customer Personally Identifiable Information (PII) to an authorized external auditor.",
+    "prompt": "Which data transfer method is compliant with data protection standards?",
+    "options": [
+      "Attach the unencrypted spreadsheet to a personal Gmail account and email it",
+      "Use an approved corporate encrypted file transfer service with access controls and audit logging",
+      "Upload the spreadsheet to a public file sharing site and email the link",
+      "Post the data in an open instant messaging channel"
+    ],
+    "correct_answer": "Use an approved corporate encrypted file transfer service with access controls and audit logging",
+    "explanation": "Customer PII must be protected in transit via approved encryption and access-controlled corporate channels.",
+    "tags": ["data_protection", "pii_handling", "encryption", "secure_transfer"]
+  },
+  {
+    "scenario_id": "AI001",
+    "title": "Debugging with Customer Data in Public AI",
+    "category": "ai_security",
+    "difficulty": 1,
+    "description": "To fix a complex customer database bug quickly, a developer considers copying raw customer records (names, addresses, account numbers) directly into a public AI chatbot.",
+    "prompt": "What security risk does this action introduce?",
+    "options": [
+      "It is completely safe because public AI models delete data immediately",
+      "It causes unauthorized disclosure of customer PII and violates data privacy laws through public AI data ingestion",
+      "It is safe if you ask the AI chatbot nicely not to train on the data",
+      "It improves AI accuracy with real customer data without any compliance impact"
+    ],
+    "correct_answer": "It causes unauthorized disclosure of customer PII and violates data privacy laws through public AI data ingestion",
+    "explanation": "Pasting confidential customer data into public AI services risks data exposure, training set leakage, and regulatory compliance violations.",
+    "tags": ["ai_security", "public_ai_upload", "data_leakage", "pii_handling"]
+  },
+  {
+    "scenario_id": "AI002",
+    "title": "AI Assistant Code Snippet with Hardcoded Secret",
+    "category": "ai_security",
+    "difficulty": 2,
+    "description": "An AI coding assistant generates a working code snippet for database integration, but the generated code includes a hardcoded production API key inside the script.",
+    "prompt": "How should you integrate this code into your repository?",
+    "options": [
+      "Commit the code directly to Git because the AI assistant generated it",
+      "Remove the hardcoded API key and store credentials safely in environment variables or a secure secret manager",
+      "Replace the API key with your personal password before committing",
+      "Keep the API key in the code and mark the repository as private"
+    ],
+    "correct_answer": "Remove the hardcoded API key and store credentials safely in environment variables or a secure secret manager",
+    "explanation": "AI code tools often generate placeholders or hardcoded keys. Secrets must never be committed to source code; use environment variables or secret vaults.",
+    "tags": ["ai_security", "hardcoded_secret", "secret_exposure", "ai_generated_code"]
   }
 ]
