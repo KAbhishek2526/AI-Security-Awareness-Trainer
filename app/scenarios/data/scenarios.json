@@ -1,0 +1,36 @@
+[
+  {
+    "scenario_id": "SC001",
+    "title": "Urgent Password Reset Link",
+    "category": "phishing",
+    "difficulty": 2,
+    "description": "You receive an email from 'IT-Support <support@company-verify.com>' stating your email account password will expire in 15 minutes unless reset immediately via the attached link.",
+    "prompt": "What is the safest action to take?",
+    "options": [
+      "Click the link immediately and update your password",
+      "Verify the sender email domain and contact internal IT support directly",
+      "Forward the email to all colleagues to warn them",
+      "Ignore it without reporting"
+    ],
+    "correct_answer": "Verify the sender email domain and contact internal IT support directly",
+    "explanation": "Legitimate corporate IT updates never come from external unverified domains requiring immediate password input.",
+    "tags": ["phishing", "email", "urgency"]
+  },
+  {
+    "scenario_id": "SC002",
+    "title": "Unexpected OTP Request Call",
+    "category": "mfa_security",
+    "difficulty": 1,
+    "description": "A caller claiming to be from your company helpdesk calls saying they are testing MFA systems and asks you to read aloud the 6-digit OTP code sent to your phone.",
+    "prompt": "How should you respond to this call?",
+    "options": [
+      "Provide the OTP since they identified themselves as IT helpdesk",
+      "Refuse to share the OTP, hang up, and report the incident to security",
+      "Ask them to confirm your employee ID before sharing the OTP",
+      "Read out half of the code to verify their identity"
+    ],
+    "correct_answer": "Refuse to share the OTP, hang up, and report the incident to security",
+    "explanation": "One-Time Passwords (OTPs) are confidential single-use tokens. Support staff will NEVER ask for your OTP.",
+    "tags": ["mfa_security", "social_engineering", "otp"]
+  }
+]
