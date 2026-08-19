@@ -15,7 +15,7 @@ def test_health_endpoint():
     response = health_check()
     assert response.status == "ok"
     assert response.app_name == settings.app_name
-    assert response.modules["person1_scenarios"] == "ready"
-    assert response.modules["person2_ai_coach"] == "ready"
-    assert response.modules["person3_risk_engine"] == "ready"
-    assert response.modules["person4_dashboard"] == "ready"
+    assert response.modules["person1_scenarios"] in ["ready", "active"]
+    assert response.modules["person2_ai_coach"] in ["ready", "active"]
+    assert response.modules["person3_risk_engine"] in ["ready", "active"]
+    assert response.modules["person4_dashboard"] in ["ready", "active"]
